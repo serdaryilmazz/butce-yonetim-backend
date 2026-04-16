@@ -324,26 +324,32 @@
               <div class="wizard-item-row">
                 <label class="wizard-label">{{ cat.name }}</label>
                 <div class="wizard-inputs">
-                  <input
-                    type="number"
-                    class="day-input"
-                    placeholder="G"
-                    [(ngModel)]="wizardDays[cat._id]"
-                    [class.invalid]="getWizardDayError(cat._id)"
-                    (keydown)="preventInvalidNumberKey($event, false)"
-                    (paste)="preventInvalidNumberPaste($event, false)"
-                    (blur)="markWizardDayTouched(cat._id); normalizeWizardDay(cat._id)"
-                    min="1"
-                    max="31">
-                  <input
-                    type="number"
-                    class="amount-input"
-                    placeholder="Tutar (TL)"
-                    [(ngModel)]="wizardAmounts[cat._id]"
-                    [class.invalid]="getWizardAmountError(cat._id)"
-                    (keydown)="preventInvalidNumberKey($event)"
-                    (paste)="preventInvalidNumberPaste($event)"
-                    (blur)="markWizardAmountTouched(cat._id); normalizeWizardAmount(cat._id)">
+                  <div class="wizard-field-group">
+                    <span class="field-mini-label">Gün</span>
+                    <input
+                      type="number"
+                      class="day-input"
+                      placeholder="G"
+                      [(ngModel)]="wizardDays[cat._id]"
+                      [class.invalid]="getWizardDayError(cat._id)"
+                      (keydown)="preventInvalidNumberKey($event, false)"
+                      (paste)="preventInvalidNumberPaste($event, false)"
+                      (blur)="markWizardDayTouched(cat._id); normalizeWizardDay(cat._id)"
+                      min="1"
+                      max="31">
+                  </div>
+                  <div class="wizard-field-group">
+                    <span class="field-mini-label">Tutar</span>
+                    <input
+                      type="number"
+                      class="amount-input"
+                      placeholder="Tutar (TL)"
+                      [(ngModel)]="wizardAmounts[cat._id]"
+                      [class.invalid]="getWizardAmountError(cat._id)"
+                      (keydown)="preventInvalidNumberKey($event)"
+                      (paste)="preventInvalidNumberPaste($event)"
+                      (blur)="markWizardAmountTouched(cat._id); normalizeWizardAmount(cat._id)">
+                  </div>
                 </div>
                 <small class="wizard-field-error" *ngIf="getWizardDayError(cat._id) || getWizardAmountError(cat._id)">
                   {{ getWizardDayError(cat._id) || getWizardAmountError(cat._id) }}
@@ -372,26 +378,32 @@
               <div class="wizard-item-row">
                 <label class="wizard-label">{{ cat.name }}</label>
                 <div class="wizard-inputs">
-                  <input
-                    type="number"
-                    class="day-input"
-                    placeholder="G"
-                    [(ngModel)]="wizardDays[cat._id]"
-                    [class.invalid]="getWizardDayError(cat._id)"
-                    (keydown)="preventInvalidNumberKey($event, false)"
-                    (paste)="preventInvalidNumberPaste($event, false)"
-                    (blur)="markWizardDayTouched(cat._id); normalizeWizardDay(cat._id)"
-                    min="1"
-                    max="31">
-                  <input
-                    type="number"
-                    class="amount-input"
-                    placeholder="Tutar (TL)"
-                    [(ngModel)]="wizardAmounts[cat._id]"
-                    [class.invalid]="getWizardAmountError(cat._id)"
-                    (keydown)="preventInvalidNumberKey($event)"
-                    (paste)="preventInvalidNumberPaste($event)"
-                    (blur)="markWizardAmountTouched(cat._id); normalizeWizardAmount(cat._id)">
+                  <div class="wizard-field-group">
+                    <span class="field-mini-label">Gün</span>
+                    <input
+                      type="number"
+                      class="day-input"
+                      placeholder="G"
+                      [(ngModel)]="wizardDays[cat._id]"
+                      [class.invalid]="getWizardDayError(cat._id)"
+                      (keydown)="preventInvalidNumberKey($event, false)"
+                      (paste)="preventInvalidNumberPaste($event, false)"
+                      (blur)="markWizardDayTouched(cat._id); normalizeWizardDay(cat._id)"
+                      min="1"
+                      max="31">
+                  </div>
+                  <div class="wizard-field-group">
+                    <span class="field-mini-label">Tutar</span>
+                    <input
+                      type="number"
+                      class="amount-input"
+                      placeholder="Tutar (TL)"
+                      [(ngModel)]="wizardAmounts[cat._id]"
+                      [class.invalid]="getWizardAmountError(cat._id)"
+                      (keydown)="preventInvalidNumberKey($event)"
+                      (paste)="preventInvalidNumberPaste($event)"
+                      (blur)="markWizardAmountTouched(cat._id); normalizeWizardAmount(cat._id)">
+                  </div>
                 </div>
                 <small class="wizard-field-error" *ngIf="getWizardDayError(cat._id) || getWizardAmountError(cat._id)">
                   {{ getWizardDayError(cat._id) || getWizardAmountError(cat._id) }}
