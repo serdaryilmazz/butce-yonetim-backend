@@ -7,7 +7,7 @@ export const securityHeadersMiddleware = (_request: Request, response: Response,
   response.setHeader('X-DNS-Prefetch-Control', 'off');
   response.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  response.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  response.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+  response.setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
+  response.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 };
