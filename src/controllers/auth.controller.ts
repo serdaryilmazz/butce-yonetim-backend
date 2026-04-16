@@ -53,8 +53,9 @@ class AuthController {
       }
 
       const result = await authService.register(email, password);
-      this.setSessionCookie(response, authService.createSessionToken(result.user.id));
-      response.status(201).json({ success: true, data: result });
+      const token = authService.createSessionToken(result.user.id);
+      this.setSessionCookie(response, token);
+      response.status(201).json({ success: true, data: { ...result, token } });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Registration failed.';
       const status =
@@ -86,8 +87,9 @@ class AuthController {
       }
 
       const result = await authService.login(email, password);
-      this.setSessionCookie(response, authService.createSessionToken(result.user.id));
-      response.status(200).json({ success: true, data: result });
+      const token = authService.createSessionToken(result.user.id);
+      this.setSessionCookie(response, token);
+      response.status(200).json({ success: true, data: { ...result, token } });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed.';
       const status = message === 'Invalid credentials.' ? 401 : 500;
