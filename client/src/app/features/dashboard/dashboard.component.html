@@ -1,0 +1,47 @@
+<div class="page-container">
+  <div class="header-section">
+    <h2 class="display-lg">Dashboard</h2>
+    <p class="body-md">Mevcut finansal durumunuzun özeti</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+  <div class="cards-grid">
+    <div class="stat-card">
+      <span class="card-title label-md">Bakiye</span>
+      <span class="card-value">{{ summary.balance | currency:'TRY':'symbol':'1.2-2' }}</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="card-title label-md">Gelir</span>
+      <span class="card-value text-success">{{ summary.totalIncome | currency:'TRY':'symbol':'1.2-2' }}</span>
+    </div>
+
+    <div class="stat-card">
+      <span class="card-title label-md">Gider</span>
+      <span class="card-value text-danger">{{ summary.totalExpense | currency:'TRY':'symbol':'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <div class="ai-section" *ngIf="aiInsights.length > 0">
+    <div class="insight-card">
+      <h3 class="headline-sm">Finansal Analiz ve Öneriler</h3>
+      <div class="insights-container">
+        <!-- Budget Alerts -->
+        <div *ngFor="let budget of overLimitBudgets" class="insight-item alert">
+          <div class="insight-icon">⚠️</div>
+          <div class="insight-text">
+            <strong>Bütçe Aşımı:</strong> {{ budget.name }} kategorisinde bütçeniz 
+            <span class="text-danger-bold">%{{ budget.percentage }}</span> kadar aşıldı!
+          </div>
+        </div>
+
+        <div *ngFor="let insight of aiInsights" class="insight-item">
+          <span class="insight-icon">💡</span>
+          <p class="body-md">{{ insight }}</p>
+        </div>
+        <div *ngIf="aiInsights.length === 0 && overLimitBudgets.length === 0" class="body-md">Veriler analiz ediliyor...</div>
+      </div>
+    </div>
+  </div>
+</div>

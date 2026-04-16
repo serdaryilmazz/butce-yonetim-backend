@@ -1,0 +1,26 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>Giriş Yap</h2>
+      <p class="body-md">Hesabınıza erişmek için bilgilerinizi girin.</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="input-group">
+        <label class="label-md">E-posta</label>
+        <input type="email" formControlName="email" required placeholder="ad@domain.com" />
+      </div>
+
+      <div class="input-group">
+        <label class="label-md">Şifre</label>
+        <input type="password" formControlName="password" required placeholder="********" />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || isSubmitting">Giriş</button>
+    </form>
+
+     <p class="body-md switch-auth">Henüz hesabınız yok mu? <a routerLink="/register">Kayıt olun</a></p>
+  </div>
+</div>

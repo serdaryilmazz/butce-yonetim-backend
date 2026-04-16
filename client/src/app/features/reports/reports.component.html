@@ -1,0 +1,26 @@
+<div class="page-container">
+  <div class="header-section">
+    <h2 class="display-lg">Analizler</h2>
+    <p class="body-md">Finansal verilerinizin görsel dökümü.</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3 class="headline-sm">Kategori Dağılımı</h3>
+      <div class="chart-container pie-container">
+        <canvas #pieChartCanvas></canvas>
+        <div *ngIf="categoryData.length === 0" class="empty-state">Veri bulunmuyor.</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="headline-sm">Günlük Harcama Trendi</h3>
+      <div class="chart-container line-container">
+        <canvas #lineChartCanvas></canvas>
+        <div *ngIf="dailyData.length === 0" class="empty-state">Veri bulunmuyor.</div>
+      </div>
+    </div>
+  </div>
+</div>

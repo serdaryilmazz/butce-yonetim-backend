@@ -1,0 +1,428 @@
+<div class="page-container">
+  <div class="header-section">
+    <div class="header-main">
+      <h2 class="display-lg">İşlemler</h2>
+      <p class="body-md">Gelir ve giderlerinizi buradan yönetebilirsiniz.</p>
+    </div>
+    <button class="btn-secondary btn-wizard" (click)="openWizard()">
+      <span>✨ Geçmişi Hızlı Doldur</span>
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="success-msg">{{ successMessage }}</div>
+
+  <div class="content-grid">
+    <div class="form-section">
+      <h3 class="headline-sm">Yeni Kayıt</h3>
+
+      <form [formGroup]="txForm" (ngSubmit)="onSubmit()" class="tx-form">
+        <div class="input-group">
+          <label class="label-md">Tür</label>
+          <select formControlName="type">
+            <option value="expense">Gider</option>
+            <option value="income">Gelir</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="label-md">Tutar (TL)</label>
+          <input type="number" formControlName="amount" placeholder="0.00"
+                 (keydown)="preventInvalidNumberKey($event)"
+                 (paste)="preventInvalidNumberPaste($event)"
+                 (blur)="normalizeMainAmount()"
+                 [class.invalid]="txForm.get('amount')?.invalid && txForm.get('amount')?.touched">
+          <small class="field-error" *ngIf="getControlError('amount')">{{ getControlError('amount') }}</small>
+        </div>
+
+        <div class="input-group">
+          <label class="label-md">Kategori</label>
+          <select formControlName="categoryId" 
+                  [class.invalid]="txForm.get('categoryId')?.invalid && txForm.get('categoryId')?.touched">
+            <option [ngValue]="null">Kategori seçin</option>
+            <option *ngFor="let cat of filteredCategories" [value]="cat._id">{{ cat.name }}</option>
+          </select>
+          <button type="button" class="btn-link-inline" (click)="openCategoryModal()">
+            + Yeni kategori ekle
+          </button>
+          <small class="field-error" *ngIf="getControlError('categoryId')">{{ getControlError('categoryId') }}</small>
+        </div>
+
+        <div class="input-group date-picker-container">
+          <label class="label-md">Tarih</label>
+          <div class="custom-date-input" (click)="toggleDatePicker($event)">
+            <span>{{ selectedDateStr | date:'dd.MM.yyyy' }}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+
+          <!-- Custom Picker Dropdown -->
+          <div class="picker-dropdown" *ngIf="showDatePicker" (click)="$event.stopPropagation()">
+            <div class="picker-header">
+              <button type="button" (click)="prevMonth($event)">&lt;</button>
+              <strong>{{ months[calendarDate.getMonth()] }} {{ calendarDate.getFullYear() }}</strong>
+              <button type="button" (click)="nextMonth($event)">&gt;</button>
+            </div>
+            <div class="picker-weekdays">
+              <span *ngFor="let day of weekDays">{{ day }}</span>
+            </div>
+            <div class="picker-days">
+              <span *ngFor="let day of calendarDays" 
+                    [class.empty]="!day" 
+                    [class.selected]="day && selectedDateStr === (calendarDate.getFullYear() + '-' + (calendarDate.getMonth()+1 | number:'2.0') + '-' + (day | number:'2.0'))"
+                    (click)="selectDate(day)">
+                {{ day }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="label-md">Açıklama</label>
+          <input type="text" formControlName="note" placeholder="Not ekleyin" maxlength="180">
+          <small class="field-hint">
+            {{ txForm.get('note')?.value?.length || 0 }}/180
+          </small>
+          <small class="field-error" *ngIf="getControlError('note')">{{ getControlError('note') }}</small>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting" (click)="onSubmit()">Ekle</button>
+      </form>
+    </div>
+
+    <div class="list-section">
+      <div class="list-section-header">
+        <h3 class="headline-sm">Geçmiş İşlemler</h3>
+        <button type="button" class="btn-link-inline btn-filter-reset" (click)="clearTransactionFilters()">
+          Filtreleri Temizle
+        </button>
+      </div>
+
+      <div class="transactions-filter-bar">
+        <div class="filter-group">
+          <label class="label-md">Tür</label>
+          <select [(ngModel)]="transactionFilters.type" (ngModelChange)="applyTransactionFilters()">
+            <option value="all">Tümü</option>
+            <option value="income">Gelir</option>
+            <option value="expense">Gider</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="label-md">Kategori</label>
+          <select [(ngModel)]="transactionFilters.categoryId" (ngModelChange)="applyTransactionFilters()">
+            <option value="all">Tüm kategoriler</option>
+            <option *ngFor="let cat of availableTransactionCategories" [value]="cat._id">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group date-picker-container">
+          <label class="label-md">Ay</label>
+          <div class="custom-date-input month-filter-input" (click)="toggleFilterMonthPicker($event)">
+            <span>{{ transactionFilterMonthLabel }}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+
+          <div class="picker-dropdown filter-month-dropdown" *ngIf="showFilterMonthPicker" (click)="$event.stopPropagation()">
+            <div class="picker-header" style="margin-bottom: 1rem;">
+              <button type="button" (click)="changeFilterYear(-1)">&lt;</button>
+              <strong>{{ filterMonthCursor.getFullYear() }}</strong>
+              <button type="button" (click)="changeFilterYear(1)">&gt;</button>
+            </div>
+            <div class="picker-days month-grid">
+              <span *ngFor="let m of months; let i = index"
+                    [class.selected]="transactionFilters.month === (filterMonthCursor.getFullYear() + '-' + (i + 1).toString().padStart(2, '0'))"
+                    (click)="selectFilterMonth(i)"
+                    style="font-size: 0.8rem; height: 40px;">
+                {{ m }}
+              </span>
+            </div>
+            <button type="button" class="btn-link-inline month-clear-btn" (click)="clearFilterMonth()">Ay filtresini temizle</button>
+          </div>
+        </div>
+
+        <div class="filter-group filter-search">
+          <label class="label-md">Ara</label>
+          <input type="text" placeholder="Kategori veya not ara" [(ngModel)]="transactionFilters.query" (ngModelChange)="applyTransactionFilters()">
+        </div>
+      </div>
+
+      <div class="tx-list">
+        <div *ngIf="filteredTransactions.length === 0" class="body-md">Filtreye uygun işlem bulunamadı.</div>
+
+        <div *ngFor="let tx of paginatedTransactions" class="tx-item" [ngClass]="tx.type">
+          <div class="tx-info">
+            <span class="tx-category-tag">{{ getCategoryName(tx) }}</span>
+            <strong>{{ tx.note || (tx.type === 'income' ? 'Gelir' : 'Gider') }}</strong>
+            <div class="body-md text-muted">{{ tx.date | date:'dd MMM yyyy' }}</div>
+          </div>
+          <div class="tx-actions">
+            <span class="tx-amount">
+              {{ tx.type === 'income' ? '+' : '-' }}{{ tx.amount | currency:'TRY':'':'1.2-2' }} TL
+            </span>
+            <button class="btn-delete" (click)="onDelete(tx._id)" title="Sil">Sil</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tx-pagination" *ngIf="filteredTransactions.length > transactionsPerPage">
+        <button type="button" class="btn-secondary" [disabled]="currentTransactionsPage === 1" (click)="goToTransactionsPage(currentTransactionsPage - 1)">
+          Önceki
+        </button>
+        <span class="body-md pagination-status">
+          Sayfa {{ currentTransactionsPage }} / {{ totalTransactionsPages }} · {{ filteredTransactions.length }} kayıt
+        </span>
+        <button type="button" class="btn-secondary" [disabled]="currentTransactionsPage === totalTransactionsPages" (click)="goToTransactionsPage(currentTransactionsPage + 1)">
+          Sonraki
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-backdrop" *ngIf="showDeleteModal">
+    <div class="modal-content">
+      <h3 class="headline-sm">İşlemi Sil</h3>
+      <p class="body-md">Bu işlemi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cancelDelete()">İptal</button>
+        <button class="btn-danger" (click)="confirmDelete()">Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showCategoryModal" (click)="closeCategoryModal()">
+    <div class="modal-content category-modal" (click)="$event.stopPropagation()">
+      <h3 class="headline-sm">Yeni Kategori Ekle</h3>
+      <p class="body-md">Gelir veya giderlerinize uygun yeni bir kategori tanımlayın.</p>
+
+      <form [formGroup]="categoryForm" (ngSubmit)="createCategory()" class="tx-form">
+        <div class="input-group">
+          <label class="label-md">Kategori Türü</label>
+          <select formControlName="type">
+            <option value="expense">Gider</option>
+            <option value="income">Gelir</option>
+          </select>
+          <small class="field-error" *ngIf="getCategoryControlError('type')">{{ getCategoryControlError('type') }}</small>
+        </div>
+
+        <div class="input-group">
+          <label class="label-md">Kategori Adı</label>
+          <input type="text" formControlName="name" placeholder="Örn: Döviz Geliri" maxlength="50">
+          <small class="field-hint">{{ categoryForm.get('name')?.value?.length || 0 }}/50</small>
+          <small class="field-error" *ngIf="getCategoryControlError('name')">{{ getCategoryControlError('name') }}</small>
+        </div>
+
+        <div *ngIf="categoryErrorMessage" class="error-msg">{{ categoryErrorMessage }}</div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeCategoryModal()">Vazgeç</button>
+          <button type="submit" class="btn-primary" [disabled]="isCreatingCategory">
+            {{ isCreatingCategory ? 'Ekleniyor...' : 'Kategoriyi Ekle' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- History Wizard Modal -->
+  <div class="modal-backdrop wizard-backdrop" *ngIf="showWizard" (click)="requestCloseWizard()">
+    <div class="modal-content wizard-modal" (click)="$event.stopPropagation()">
+      <div class="wizard-header">
+        <h3 class="headline-sm">Hızlı Geçmiş Kaydı</h3>
+        <p class="body-md">Seçtiğiniz ay için kategorilere göre toplam tutarları girin.</p>
+      </div>
+      
+      <div class="wizard-month-select">
+        <label class="label-md">Dönem Seçin:</label>
+        <div class="date-picker-container" style="flex: 1;">
+          <div class="custom-date-input" (click)="toggleWizardDatePicker($event)">
+            <span>{{ wizardMonthName }}</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+
+          <!-- Wizard Month/Year Picker Popup (Opens UP) -->
+          <div class="picker-dropdown" *ngIf="showWizardDatePicker" (click)="$event.stopPropagation()" style="bottom: auto; top: calc(100% + 8px);">
+            <div class="picker-header" style="margin-bottom: 1rem;">
+              <button type="button" (click)="changeWizardYear(-1)">&lt;</button>
+              <strong>{{ wizardMonth.split('-')[0] }}</strong>
+              <button type="button" (click)="changeWizardYear(1)">&gt;</button>
+            </div>
+            <div class="picker-days" style="grid-template-columns: repeat(3, 1fr); gap: 8px;">
+              <span *ngFor="let m of months; let i = index" 
+                    [class.selected]="wizardMonth.endsWith((i + 1).toString().padStart(2, '0'))"
+                    (click)="selectWizardMonth(i)"
+                    style="font-size: 0.8rem; height: 40px;">
+                {{ m }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="wizard-preview">
+        <div class="wizard-preview-top">
+          <div class="wizard-preview-stat">
+            <div class="label-md">Kaydedilecek Kayıt</div>
+            <div class="wizard-preview-value">{{ wizardPreviewCount }}</div>
+          </div>
+          <div class="wizard-preview-stat">
+            <div class="label-md">Toplam Gelir</div>
+            <div class="wizard-preview-value text-success">{{ wizardPreviewTotals.income | currency:'TRY':'':'1.2-2' }} TL</div>
+          </div>
+          <div class="wizard-preview-stat">
+            <div class="label-md">Toplam Gider</div>
+            <div class="wizard-preview-value text-danger">{{ wizardPreviewTotals.expense | currency:'TRY':'':'1.2-2' }} TL</div>
+          </div>
+        </div>
+
+        <div class="wizard-preview-list" *ngIf="wizardEntries.length > 0">
+          <div class="wizard-preview-item" *ngFor="let e of wizardEntries">
+            <div class="wizard-preview-left">
+              <span class="wizard-preview-badge" [class.income]="e.type === 'income'" [class.expense]="e.type === 'expense'">
+                {{ e.type === 'income' ? 'Gelir' : 'Gider' }}
+              </span>
+              <strong class="wizard-preview-name">{{ e.name }}</strong>
+              <span class="body-md wizard-preview-meta">Gün: {{ e.day }}</span>
+            </div>
+            <div class="wizard-preview-right">
+              <span class="wizard-preview-amount" [class.text-success]="e.type === 'income'" [class.text-danger]="e.type === 'expense'">
+                {{ e.amount | currency:'TRY':'':'1.2-2' }} TL
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="body-md" *ngIf="wizardEntries.length === 0">Önizleme için en az bir kategoriye tutar girin.</div>
+      </div>
+
+      <div class="wizard-grid-container">
+        <div class="wizard-filter-bar">
+          <div class="wizard-search">
+            <label class="label-md" for="wizardCategoryQuery">Kategori Ara</label>
+            <input id="wizardCategoryQuery" type="text" [(ngModel)]="wizardCategoryQuery" placeholder="Örn: Kira">
+          </div>
+
+          <label class="wizard-hidezero-toggle">
+            <input type="checkbox" [(ngModel)]="wizardHideZero">
+            <span>0 TL olanları gizle</span>
+          </label>
+        </div>
+
+        <button type="button" class="wizard-section-header" (click)="toggleWizardSection('expense')"
+                [attr.aria-expanded]="wizardSections.expenseOpen">
+          <span class="label-md section-title" style="margin: 0;">Giderler</span>
+          <span class="wizard-section-meta">
+            <span class="wizard-section-pill expense">{{ wizardExpenseTotal | currency:'TRY':'':'1.2-2' }} TL</span>
+            <span class="wizard-section-pill">{{ wizardExpenseCount }} kayıt</span>
+            <button type="button" class="wizard-add-category-btn" (click)="$event.stopPropagation(); openCategoryModal('expense')">+ Kategori Ekle</button>
+          </span>
+          <span class="wizard-section-chevron" [class.open]="wizardSections.expenseOpen">▾</span>
+        </button>
+        <div class="wizard-section-body" [class.closed]="!wizardSections.expenseOpen">
+          <div class="wizard-grid">
+            <ng-container *ngFor="let cat of wizardFilteredExpenseCategories">
+              <div class="wizard-item-row">
+                <label class="wizard-label">{{ cat.name }}</label>
+                <div class="wizard-inputs">
+                  <input
+                    type="number"
+                    class="day-input"
+                    placeholder="G"
+                    [(ngModel)]="wizardDays[cat._id]"
+                    [class.invalid]="getWizardDayError(cat._id)"
+                    (keydown)="preventInvalidNumberKey($event, false)"
+                    (paste)="preventInvalidNumberPaste($event, false)"
+                    (blur)="markWizardDayTouched(cat._id); normalizeWizardDay(cat._id)"
+                    min="1"
+                    max="31">
+                  <input
+                    type="number"
+                    class="amount-input"
+                    placeholder="Tutar (TL)"
+                    [(ngModel)]="wizardAmounts[cat._id]"
+                    [class.invalid]="getWizardAmountError(cat._id)"
+                    (keydown)="preventInvalidNumberKey($event)"
+                    (paste)="preventInvalidNumberPaste($event)"
+                    (blur)="markWizardAmountTouched(cat._id); normalizeWizardAmount(cat._id)">
+                </div>
+                <small class="wizard-field-error" *ngIf="getWizardDayError(cat._id) || getWizardAmountError(cat._id)">
+                  {{ getWizardDayError(cat._id) || getWizardAmountError(cat._id) }}
+                </small>
+              </div>
+            </ng-container>
+          </div>
+          <div class="wizard-empty" *ngIf="wizardFilteredExpenseCategories.length === 0">
+            Eşleşen gider kategorisi yok.
+          </div>
+        </div>
+
+        <button type="button" class="wizard-section-header" (click)="toggleWizardSection('income')"
+                [attr.aria-expanded]="wizardSections.incomeOpen">
+          <span class="label-md section-title" style="margin: 0;">Gelirler</span>
+          <span class="wizard-section-meta">
+            <span class="wizard-section-pill income">{{ wizardIncomeTotal | currency:'TRY':'':'1.2-2' }} TL</span>
+            <span class="wizard-section-pill">{{ wizardIncomeCount }} kayıt</span>
+            <button type="button" class="wizard-add-category-btn" (click)="$event.stopPropagation(); openCategoryModal('income')">+ Kategori Ekle</button>
+          </span>
+          <span class="wizard-section-chevron" [class.open]="wizardSections.incomeOpen">▾</span>
+        </button>
+        <div class="wizard-section-body" [class.closed]="!wizardSections.incomeOpen">
+          <div class="wizard-grid">
+            <ng-container *ngFor="let cat of wizardFilteredIncomeCategories">
+              <div class="wizard-item-row">
+                <label class="wizard-label">{{ cat.name }}</label>
+                <div class="wizard-inputs">
+                  <input
+                    type="number"
+                    class="day-input"
+                    placeholder="G"
+                    [(ngModel)]="wizardDays[cat._id]"
+                    [class.invalid]="getWizardDayError(cat._id)"
+                    (keydown)="preventInvalidNumberKey($event, false)"
+                    (paste)="preventInvalidNumberPaste($event, false)"
+                    (blur)="markWizardDayTouched(cat._id); normalizeWizardDay(cat._id)"
+                    min="1"
+                    max="31">
+                  <input
+                    type="number"
+                    class="amount-input"
+                    placeholder="Tutar (TL)"
+                    [(ngModel)]="wizardAmounts[cat._id]"
+                    [class.invalid]="getWizardAmountError(cat._id)"
+                    (keydown)="preventInvalidNumberKey($event)"
+                    (paste)="preventInvalidNumberPaste($event)"
+                    (blur)="markWizardAmountTouched(cat._id); normalizeWizardAmount(cat._id)">
+                </div>
+                <small class="wizard-field-error" *ngIf="getWizardDayError(cat._id) || getWizardAmountError(cat._id)">
+                  {{ getWizardDayError(cat._id) || getWizardAmountError(cat._id) }}
+                </small>
+              </div>
+            </ng-container>
+          </div>
+          <div class="wizard-empty" *ngIf="wizardFilteredIncomeCategories.length === 0">
+            Eşleşen gelir kategorisi yok.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 2rem;">
+        <button class="btn-secondary" (click)="requestCloseWizard()" style="width: auto;">Kapat</button>
+        <button class="btn-primary" [disabled]="isSavingBulk || wizardPreviewCount === 0" (click)="saveWizardData()">
+          {{ isSavingBulk ? 'Kaydediliyor...' : 'Tümünü Kaydet' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wizard Close Confirm Modal -->
+  <div class="modal-backdrop" *ngIf="showWizardCloseConfirm" (click)="cancelCloseWizard()">
+    <div class="modal-content wizard-confirm" (click)="$event.stopPropagation()">
+      <h3 class="headline-sm">Kaydedilmemiş değişiklikler var</h3>
+      <p class="body-md">Girdiğiniz tutarlar kaydedilmedi. Çıkarsanız kaybolacak. Yine de kapatmak istiyor musunuz?</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cancelCloseWizard()">Vazgeç</button>
+        <button class="btn-danger" (click)="confirmCloseWizard()">Çık</button>
+      </div>
+    </div>
+  </div>
+</div>

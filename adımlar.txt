@@ -1,0 +1,232 @@
+Angular 19 (standalone) + Node.js (Express) + MongoDB (Mongoose) kullan.
+Kod clean architecture, modüler ve scalable olsun.
+TypeScript strict mode kullan.
+Backend için controller-service pattern uygula.
+🏗️ 1. BACKEND SETUP
+Node.js + Express backend projesi oluştur.
+
+Özellikler:
+- Express server
+- MongoDB bağlantısı (Mongoose)
+- dotenv kullan
+- CORS aktif
+- JSON middleware
+
+Klasör yapısı:
+
+/src
+  /config
+  /models
+  /routes
+  /controllers
+  /services
+  /middlewares
+  /utils
+
+Server 3000 portunda çalışsın.
+MongoDB bağlantısı .env'den alınsın.
+🔌 2. DATABASE CONNECTION
+Mongoose ile MongoDB bağlantısı kur.
+
+- connectDB fonksiyonu yaz
+- bağlantı başarılı / hatalı log bas
+- app start olmadan önce DB bağlansın
+🧱 3. MODELLER (DÜZELTİLMİŞ HAL)
+Mongoose modellerini oluştur:
+
+User:
+- email (unique)
+- password
+- timestamps
+
+Category:
+- name
+- type: 'income' | 'expense'
+- icon
+- isDefault
+- userId (optional)
+- timestamps
+
+Transaction:
+- userId (ZORUNLU)
+- type
+- amount
+- categoryId (ref Category)
+- date
+- note
+- timestamps
+
+RecurringTransaction:
+- userId
+- amount
+- categoryId
+- interval: 'monthly'
+- lastExecutedDate
+- timestamps
+
+Budget:
+- userId
+- categoryId
+- limit
+- timestamps
+🔐 4. AUTH SYSTEM
+JWT tabanlı auth sistemi kur:
+
+- Register endpoint
+- Login endpoint
+- bcrypt ile password hash
+- JWT token üret
+
+Middleware:
+- authMiddleware yaz
+- token doğrula
+- req.user içine userId ekle
+🧾 5. TRANSACTION API (USER SCOPED)
+Transaction API yaz:
+
+- GET /transactions (sadece user’ın verisi)
+- POST /transactions
+- PUT /transactions/:id
+- DELETE /transactions/:id
+
+Kurallar:
+- Her işlem req.user.id ile ilişkilendirilsin
+- Başkasının datasına erişim olmasın
+📁 6. CATEGORY API + DEFAULT SEED
+Category API yaz:
+
+- GET /categories
+- POST /categories
+- DELETE /categories/:id
+
+Ekstra:
+- Uygulama ilk başladığında default kategoriler oluştur:
+  (Maaş, Burs, Kira, Yemek vb.)
+- Default kategoriler global olsun
+🔄 7. RECURRING SYSTEM (DÜZELTİLMİŞ)
+Recurring transaction sistemi yaz:
+
+- Uygulama her requestte kontrol etsin ama:
+  - lastExecutedDate kontrolü yap
+  - aynı ay tekrar eklenmesin
+
+Gerekli transactionları otomatik oluştur.
+📊 8. ANALYTICS API (GENİŞ)
+Analytics endpointleri oluştur:
+
+GET /analytics/summary
+- toplam gelir
+- toplam gider
+- bakiye
+
+GET /analytics/top-category
+
+GET /analytics/monthly-comparison
+
+GET /analytics/category-distribution
+(pie chart için)
+
+GET /analytics/daily-expenses
+(line chart için)
+🤖 9. AI ANALİZ SERVİSİ
+Transaction verilerini analiz eden servis yaz:
+
+Kurallar:
+- Harcama artışı varsa tespit et
+- En çok harcanan kategoriyi bul
+- Gereksiz harcama patternlerini yakala
+
+Endpoint:
+GET /analytics/ai-insights
+
+Response:
+string[] öneriler
+💰 10. BUDGET API
+Budget sistemi yaz:
+
+- POST /budgets
+- GET /budgets
+
+Ekstra:
+- Harcama limitini aşınca flag üret
+⚙️ 11. MIDDLEWARE & CORE
+Şunları ekle:
+
+- Global error handler middleware
+- Request validation (Joi veya Zod)
+- API response standardı:
+{
+  success: boolean,
+  data: any
+}
+⚡ 12. INDEXING
+Transaction modeline index ekle:
+
+- userId + date
+
+Performans optimizasyonu yap.
+🌐 13. ANGULAR SETUP
+Angular 19 standalone proje oluştur.
+
+Klasör yapısı:
+
+/core
+/shared
+/features
+  /auth
+  /transactions
+  /categories
+  /dashboard
+  /reports
+
+Routing yapılandır.
+🔌 14. API SERVICE (FRONTEND)
+Angular HttpClient ile API service yaz:
+
+- Base URL environment.ts'ten alınsın
+- getTransactions()
+- addTransaction()
+- deleteTransaction()
+
+Backend ile bağlantı kur.
+🔐 15. AUTH FRONTEND
+Angular auth sistemi kur:
+
+- login/register component
+- JWT token localStorage’da sakla
+- HTTP interceptor ile token ekle
+💰 16. TRANSACTION UI
+Transaction ekranı yap:
+
+- Listeleme
+- Ekleme formu (reactive form)
+- Silme / güncelleme
+
+Kategori dropdown bağla.
+📊 17. DASHBOARD
+Dashboard oluştur:
+
+- summary API’den veri çek
+- bakiye göster
+- kart UI kullan
+📈 18. GRAFİKLER
+Chart.js ekle:
+
+- Pie chart (category-distribution API)
+- Line chart (daily-expenses API)
+🎯 19. BUDGET UI
+Budget ekranı yap:
+
+- limit belirleme
+- progress bar
+- aşım uyarısı
+🤖 20. AI UI
+AI önerilerini göster:
+
+- ai-insights endpoint çağır
+- liste olarak UI’da göster
+🎨 21. UI POLISH
+- Dark mode
+- Responsive design
+- Floating action button
+- Modern dashboard UI

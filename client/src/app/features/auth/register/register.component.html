@@ -1,0 +1,26 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>Hesap Oluştur</h2>
+      <p class="body-md">Harcamalarınızı yönetmeye hemen başlayın.</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="input-group">
+        <label class="label-md">E-posta</label>
+        <input type="email" formControlName="email" required placeholder="ad@domain.com" />
+      </div>
+
+      <div class="input-group">
+        <label class="label-md">Şifre</label>
+        <input type="password" formControlName="password" required placeholder="********" />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || isSubmitting">Kayıt Ol</button>
+    </form>
+
+    <p class="body-md switch-auth">Zaten hesabınız var mı? <a routerLink="/login">Giriş yapın</a></p>
+  </div>
+</div>

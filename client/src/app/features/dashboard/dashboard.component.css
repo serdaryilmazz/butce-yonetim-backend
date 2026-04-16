@@ -1,0 +1,92 @@
+.page-container { display: flex; flex-direction: column; gap: 2rem; }
+
+.header-section h2 { margin-bottom: 0.25rem; }
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  padding: 2rem;
+  border-radius: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-premium);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover { transform: translateY(-8px); }
+
+.stat-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--primary); opacity: 0; transition: opacity 0.3s;
+}
+.stat-card:hover::after { opacity: 1; }
+
+.card-title { font-weight: 600; color: var(--text-mute); }
+
+.card-value {
+  font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-main);
+}
+
+.text-success { color: var(--secondary); }
+.text-danger { color: var(--tertiary); }
+
+.ai-section { margin-top: 1rem; }
+
+.insight-card {
+  padding: 2.5rem;
+  border-radius: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-premium);
+}
+
+.insights-container {
+  display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem;
+}
+
+.insight-item {
+  display: flex; align-items: flex-start; gap: 1rem;
+  padding: 1.5rem; border-radius: 18px;
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.05), transparent);
+  border: 1px solid rgba(99, 102, 241, 0.05);
+  transition: transform 0.2s;
+}
+.insight-item:hover { transform: translateX(4px); }
+
+.insight-item.alert {
+  background: linear-gradient(to right, rgba(244, 63, 94, 0.05), transparent);
+  border: 1px solid rgba(244, 63, 100, 0.1);
+  border-left: 5px solid var(--tertiary);
+}
+
+.insight-icon {
+  font-size: 1.25rem;
+  width: 40px; height: 40px;
+  background: var(--bg-color);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.text-danger-bold {
+  color: var(--tertiary);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) { .cards-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 768px) {
+  .stat-card { padding: 1.5rem; border-radius: 20px; }
+  .insight-card { padding: 1.5rem; border-radius: 22px; }
+  .insight-item { padding: 1.125rem; }
+  .card-value { font-size: 1.75rem; }
+}

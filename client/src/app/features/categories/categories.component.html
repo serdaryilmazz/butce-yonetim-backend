@@ -1,0 +1,60 @@
+<div class="page-container">
+  <div class="header-section">
+    <h2 class="display-lg">Bütçe Takibi</h2>
+    <p class="body-md">Harcama limitlerinizi belirleyin ve takip edin.</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="success-msg">{{ successMessage }}</div>
+
+  <div class="content-grid">
+    <div class="form-section">
+      <h3 class="headline-sm">Bütçe Limiti Tanımla</h3>
+
+      <form [formGroup]="budgetForm" (ngSubmit)="onSubmit()" class="tx-form">
+        <div class="input-group">
+          <label class="label-md">Kategori</label>
+          <select formControlName="categoryId" [class.invalid]="budgetForm.get('categoryId')?.invalid && budgetForm.get('categoryId')?.touched">
+            <option [ngValue]="null">Kategori seçin</option>
+            <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="label-md">Limit (TL)</label>
+          <input type="number" formControlName="limit" placeholder="0.00" [class.invalid]="budgetForm.get('limit')?.invalid && budgetForm.get('limit')?.touched">
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting" (click)="onSubmit()">Kaydet</button>
+      </form>
+    </div>
+
+    <div class="list-section">
+      <h3 class="headline-sm">Aktif Bütçeler</h3>
+
+      <div class="budget-list">
+        <div *ngIf="budgets.length === 0" class="body-md">Henüz bütçe tanımlanmadı.</div>
+
+        <div *ngFor="let budget of budgets" class="budget-item" [class.over-limit]="budget.isOverLimit">
+          <div class="budget-info">
+            <div class="budget-header">
+              <strong>{{ budget.categoryId?.name || 'Genel Bütçe' }}</strong>
+              <span class="limit-status" *ngIf="budget.isOverLimit">Limit Aşıldı</span>
+            </div>
+            <div class="budget-numbers">
+              <span>{{ budget.spent | currency:'TRY':'':'1.2-2' }} TL harcandı</span>
+              <span>Hedef: {{ budget.limit | currency:'TRY':'':'1.2-2' }} TL</span>
+            </div>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill"
+                 [style.width.%]="getBudgetProgress(budget)"
+                 [ngClass]="{'bg-danger': budget.isOverLimit, 'bg-success': !budget.isOverLimit}">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
