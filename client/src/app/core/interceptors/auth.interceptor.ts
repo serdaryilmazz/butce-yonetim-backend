@@ -8,17 +8,28 @@ import { AuthService } from '../services/auth/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
   const isApiRequest = req.url.startsWith(environment.apiUrl);
 
-  const request = isApiRequest
-    ? req.clone({ withCredentials: true })
-    : req;
+  let request = req;
+  const token = authService.getToken();
+
+  if (isApiRequest) {
+    const headers: { [key: string]: string } = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    request = req.clone({
+      setHeaders: headers,
+      withCredentials: true
+    });
+  }
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && isApiRequest && !req.url.endsWith('/auth/login') && !req.url.endsWith('/auth/register')) {
         authService.clearSession();
-        inject(Router).navigate(['/login']);
+        router.navigate(['/login']);
       }
 
       return throwError(() => error);
