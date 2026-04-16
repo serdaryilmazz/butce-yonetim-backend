@@ -14,6 +14,7 @@ type AuthResponse = {
   success: boolean;
   data: {
     user: AuthUser;
+    token: string;
   };
 };
 
@@ -41,7 +42,8 @@ export class AuthService {
   login(credentials: { email: string; password: string }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
-        if (response.success) {
+        if (response.success && response.data.token) {
+          localStorage.setItem('auth_token', response.data.token);
           this.currentUser.set(response.data.user);
         }
       }),
@@ -51,7 +53,8 @@ export class AuthService {
   register(userData: { email: string; password: string }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, userData).pipe(
       tap((response) => {
-        if (response.success) {
+        if (response.success && response.data.token) {
+          localStorage.setItem('auth_token', response.data.token);
           this.currentUser.set(response.data.user);
         }
       }),
@@ -82,6 +85,7 @@ export class AuthService {
   }
 
   logout(): void {
+    localStorage.removeItem('auth_token');
     this.currentUser.set(null);
     this.http.post<LogoutResponse>(`${this.apiUrl}/logout`, {}).subscribe({
       next: () => {
@@ -94,6 +98,11 @@ export class AuthService {
   }
 
   clearSession(): void {
+    localStorage.removeItem('auth_token');
     this.currentUser.set(null);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('auth_token');
   }
 }
