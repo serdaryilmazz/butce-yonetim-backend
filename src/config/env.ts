@@ -31,7 +31,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 3000),
   mongodbUri: requireEnv(process.env.MONGODB_URI, 'MONGODB_URI'),
-  corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:4200',
+  corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:4200,http://localhost,capacitor://localhost',
   jwtSecret: requireStrongSecret(process.env.JWT_SECRET, 'JWT_SECRET'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '15m',
   jwtIssuer: process.env.JWT_ISSUER ?? 'butce-yonetim-paneli-api',
